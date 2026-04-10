@@ -43,3 +43,4 @@ nginx/ssl/
 # Celery
 celerybeat-schedule
 celerybeat.pid
+.env
