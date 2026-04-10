@@ -142,3 +142,8 @@ repurpose-ai/
 ├── .env.example
 └── README.md
 ```
+
+## Status
+![Docker](https://img.shields.io/badge/docker-ready-blue)
+![Python](https://img.shields.io/badge/python-3.12-green)
+![React](https://img.shields.io/badge/react-18-61DAFB)
