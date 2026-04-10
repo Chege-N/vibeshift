@@ -1,0 +1,124 @@
+@import "tailwindcss/base";
+@import "tailwindcss/components";
+@import "tailwindcss/utilities";
+
+:root {
+  --brand: #ff710a;
+  --brand-dark: #c73a02;
+  --ink: #1a1a15;
+  --ink-muted: #5a5a4a;
+  --surface: #fafaf7;
+  --surface-2: #f5f5f0;
+  --border: #e8e8df;
+  --radius: 10px;
+}
+
+* {
+  box-sizing: border-box;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: "Satoshi", system-ui, sans-serif;
+  color: var(--ink);
+  background: var(--surface);
+  min-height: 100vh;
+}
+
+/* Typography utilities */
+.font-display {
+  font-family: "Cabinet Grotesk", sans-serif;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--surface-2);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--ink-muted);
+}
+
+/* Prose output area */
+.output-prose {
+  white-space: pre-wrap;
+  font-family: "Satoshi", sans-serif;
+  line-height: 1.7;
+  font-size: 0.9rem;
+  color: var(--ink);
+}
+
+/* Loading shimmer */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.skeleton {
+  background: linear-gradient(90deg, var(--surface-2) 25%, #ebebdf 50%, var(--surface-2) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 6px;
+}
+
+/* Grain texture overlay */
+.grain::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.4;
+}
+
+/* Focus ring */
+:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+}
+
+/* Button base */
+.btn {
+  @apply inline-flex items-center justify-center gap-2 rounded-lg font-medium transition-all duration-150 cursor-pointer select-none;
+}
+.btn-primary {
+  @apply btn bg-brand-500 text-white hover:bg-brand-600 active:scale-95 px-5 py-2.5 text-sm;
+}
+.btn-secondary {
+  @apply btn bg-ink-950 text-white hover:bg-ink-800 active:scale-95 px-5 py-2.5 text-sm;
+}
+.btn-ghost {
+  @apply btn bg-transparent text-ink-700 hover:bg-ink-50 active:scale-95 px-4 py-2 text-sm;
+}
+.btn-outline {
+  @apply btn border border-ink-200 text-ink-700 hover:border-ink-400 hover:bg-ink-50 active:scale-95 px-5 py-2.5 text-sm;
+}
+
+/* Card */
+.card {
+  @apply bg-white border border-ink-100 rounded-xl shadow-sm;
+}
+
+/* Input */
+.input {
+  @apply w-full rounded-lg border border-ink-200 bg-white px-3.5 py-2.5 text-sm text-ink-900
+         placeholder:text-ink-400 focus:border-brand-400 focus:outline-none focus:ring-2
+         focus:ring-brand-100 transition-colors;
+}
+
+/* Badge */
+.badge {
+  @apply inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium border;
+}
