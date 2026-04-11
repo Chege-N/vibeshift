@@ -91,6 +91,16 @@ export const jobsApi = {
 
   get: (id: number) => api.get<Job>(`/jobs/${id}`).then((r) => r.data),
 
+  retry: (id: number) => api.post<Job>(`/jobs/${id}/retry`).then((r) => r.data),
+
+  delete: (id: number) => api.delete(`/jobs/${id}`),
+
+  editOutput: (jobId: number, outputId: number, content: string) =>
+    api.patch(`/jobs/${jobId}/outputs/${outputId}`, { content }).then((r) => r.data),
+
+  regenerateOutput: (jobId: number, outputId: number) =>
+    api.post(`/jobs/${jobId}/outputs/${outputId}/regenerate`).then((r) => r.data),
+
   stats: () => api.get<DashboardStats>("/jobs/stats").then((r) => r.data),
 };
 
