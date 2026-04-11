@@ -91,8 +91,8 @@
 
 ### 1. Clone & Configure
 ```bash
-git clone https://github.com/yourname/repurpose-ai.git
-cd repurpose-ai
+git clone https://github.com/Chege-N/vibeshift.git
+cd vibeshift
 cp .env.example .env
 # Edit .env with your API keys
 ```
@@ -117,7 +117,7 @@ docker compose exec backend alembic upgrade head
 ## 📁 Project Structure
 
 ```
-repurpose-ai/
+vibeshift/
 ├── frontend/               # React SPA
 │   ├── src/
 │   │   ├── components/    # Reusable UI components
