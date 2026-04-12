@@ -2,7 +2,7 @@ import { Outlet, NavLink, useNavigate, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   LayoutDashboard, Plus, Settings, CreditCard,
-  LogOut, Sparkles, Zap, TrendingUp, ChevronUp,
+  LogOut, Sparkles, Zap, TrendingUp, ChevronUp, Shield,
 } from "lucide-react";
 import { useAuthStore } from "@/hooks/useAuthStore";
 import { useMe } from "@/hooks/useQueries";

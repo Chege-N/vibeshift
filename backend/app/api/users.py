@@ -11,7 +11,7 @@ router = APIRouter(prefix="/users", tags=["Users"])
 
 @router.get("/me", response_model=UserOut)
 async def get_me(current_user: User = Depends(get_current_active_user)):
-    return current_user
+    return UserOut.from_user(current_user)
 
 
 @router.patch("/me", response_model=UserOut)
@@ -29,7 +29,7 @@ async def update_me(
         current_user.email = payload.email
     await db.commit()
     await db.refresh(current_user)
-    return current_user
+    return UserOut.from_user(current_user)
 
 
 @router.post("/me/change-password", status_code=200)
@@ -50,6 +50,5 @@ async def delete_account(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_active_user),
 ):
-    """Soft delete — deactivates account, preserves data."""
     current_user.is_active = False
     await db.commit()

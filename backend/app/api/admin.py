@@ -119,7 +119,7 @@ async def list_all_users(
         query = query.where(User.plan == plan)
     query = query.order_by(desc(User.created_at)).offset(skip).limit(limit)
     result = await db.execute(query)
-    return result.scalars().all()
+    return [UserOut.from_user(u) for u in result.scalars().all()]
 
 
 @router.patch("/users/{user_id}/plan")

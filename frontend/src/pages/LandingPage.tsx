@@ -387,9 +387,9 @@ export default function LandingPage() {
           </div>
           <p className="text-sm text-ink-400">© {new Date().getFullYear()} RepurposeAI. All rights reserved.</p>
           <div className="flex gap-6 text-sm text-ink-400">
-            <a href="#" className="hover:text-ink-700 transition-colors">Privacy</a>
-            <a href="#" className="hover:text-ink-700 transition-colors">Terms</a>
-            <a href="#" className="hover:text-ink-700 transition-colors">Contact</a>
+            <Link to="/legal/privacy" className="hover:text-ink-700 transition-colors">Privacy</Link>
+            <Link to="/legal/terms" className="hover:text-ink-700 transition-colors">Terms</Link>
+            <Link to="/legal/contact" className="hover:text-ink-700 transition-colors">Contact</Link>
           </div>
         </div>
       </footer>

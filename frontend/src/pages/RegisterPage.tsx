@@ -161,8 +161,8 @@ export default function RegisterPage() {
 
           <p className="mt-4 text-center text-xs text-ink-400">
             By signing up you agree to our{" "}
-            <a href="#" className="underline hover:text-ink-700">Terms</a> and{" "}
-            <a href="#" className="underline hover:text-ink-700">Privacy Policy</a>.
+            <Link to="/legal/terms" className="underline hover:text-ink-700">Terms</Link> and{" "}
+            <Link to="/legal/privacy" className="underline hover:text-ink-700">Privacy Policy</Link>.
           </p>
           <p className="mt-4 text-center text-sm text-ink-500">
             Already have an account?{" "}

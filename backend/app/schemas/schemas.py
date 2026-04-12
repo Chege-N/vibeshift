@@ -44,13 +44,32 @@ class UserOut(BaseModel):
     is_verified: bool
     plan: PlanType
     credits_used: int
-    credits_remaining: int
-    monthly_credit_limit: int
     stripe_customer_id: Optional[str]
     created_at: datetime
 
-    class Config:
-        from_attributes = True
+    # Computed fields — resolved here so Pydantic v2 doesn't try to
+    # serialize SQLAlchemy @property methods (which it cannot do).
+    credits_remaining: int = 0
+    monthly_credit_limit: int = 3
+
+    model_config = {"from_attributes": True}
+
+    @classmethod
+    def from_user(cls, user: "User") -> "UserOut":
+        """Use this instead of model_validate() to include computed fields."""
+        return cls(
+            id=user.id,
+            email=user.email,
+            full_name=user.full_name,
+            is_active=user.is_active,
+            is_verified=user.is_verified,
+            plan=user.plan,
+            credits_used=user.credits_used,
+            stripe_customer_id=user.stripe_customer_id,
+            created_at=user.created_at,
+            credits_remaining=user.credits_remaining,
+            monthly_credit_limit=user.monthly_credit_limit,
+        )
 
 
 class UserUpdate(BaseModel):

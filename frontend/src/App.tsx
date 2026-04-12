@@ -9,6 +9,8 @@ import NewJobPage from "@/pages/NewJobPage";
 import JobDetailPage from "@/pages/JobDetailPage";
 import PricingPage from "@/pages/PricingPage";
 import SettingsPage from "@/pages/SettingsPage";
+import AdminPage from "@/pages/AdminPage";
+import LegalPage from "@/pages/LegalPage";
 import DashboardLayout from "@/components/DashboardLayout";
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
@@ -44,6 +46,11 @@ export default function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/pricing" element={<PricingPage />} />
+
+        {/* Admin – standalone, password-protected internally */}
+        <Route path="/admin" element={<AdminPage />} />
+        <Route path="/legal/:type" element={<LegalPage />} />
+        <Route path="/legal" element={<LegalPage />} />
 
         {/* Protected – wrapped in DashboardLayout */}
         <Route

@@ -15,7 +15,15 @@ async def register(payload: UserRegister, db: AsyncSession = Depends(get_db)):
         raise HTTPException(status_code=400, detail="Email already registered")
 
     user = await UserService.create(db, payload.email, payload.password, payload.full_name)
-    return user
+
+    # Fire welcome email (non-blocking — skip if Celery not ready)
+    try:
+        from app.tasks.email_tasks import send_welcome_email
+        send_welcome_email.delay(user.email, user.full_name or "")
+    except Exception:
+        pass
+
+    return UserOut.from_user(user)
 
 
 @router.post("/login", response_model=TokenResponse)
