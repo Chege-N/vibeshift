@@ -119,13 +119,19 @@ export default function RegisterPage() {
           </h1>
           <p className="text-ink-500 text-sm mb-8">Start repurposing content in seconds — free forever.</p>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4" autoComplete="off">
             <div>
               <label className="block text-sm font-semibold text-ink-700 mb-1.5">Full name</label>
               <div className="relative">
                 <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-400" />
-                <input type="text" value={fullName} onChange={(e) => setFullName(e.target.value)}
-                  className="input pl-10" placeholder="Alex Johnson" autoFocus />
+                <input
+                  type="text"
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  className="input pl-10"
+                  placeholder="Full name"
+                  autoComplete="off"
+                />
               </div>
             </div>
 
@@ -133,8 +139,15 @@ export default function RegisterPage() {
               <label className="block text-sm font-semibold text-ink-700 mb-1.5">Email</label>
               <div className="relative">
                 <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-400" />
-                <input type="email" value={email} onChange={(e) => setEmail(e.target.value)}
-                  className="input pl-10" placeholder="you@example.com" required />
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="input pl-10"
+                  placeholder="you@example.com"
+                  autoComplete="off"
+                  required
+                />
               </div>
             </div>
 
@@ -142,26 +155,42 @@ export default function RegisterPage() {
               <label className="block text-sm font-semibold text-ink-700 mb-1.5">Password</label>
               <div className="relative">
                 <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-400" />
-                <input type={showPwd ? "text" : "password"} value={password}
+                <input
+                  type={showPwd ? "text" : "password"}
+                  value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="input pl-10 pr-11" placeholder="Min. 8 characters" required />
-                <button type="button" onClick={() => setShowPwd((s) => !s)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-400 hover:text-ink-700 transition-colors">
+                  className="input pl-10 pr-11"
+                  placeholder="Min. 8 characters"
+                  autoComplete="new-password"
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPwd((s) => !s)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-400 hover:text-ink-700 transition-colors"
+                >
                   {showPwd ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
               <PasswordStrength password={password} />
             </div>
 
-            <button type="submit" disabled={loading}
-              className="btn-primary w-full py-3 text-base disabled:opacity-60 mt-2">
-              {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <>Create account <ArrowRight className="w-4 h-4" /></>}
+            <button
+              type="submit"
+              disabled={loading}
+              className="btn-primary w-full py-3 text-base disabled:opacity-60 mt-2"
+            >
+              {loading
+                ? <Loader2 className="w-4 h-4 animate-spin" />
+                : <><span>Create account</span> <ArrowRight className="w-4 h-4" /></>
+              }
             </button>
           </form>
 
           <p className="mt-4 text-center text-xs text-ink-400">
             By signing up you agree to our{" "}
-            <Link to="/legal/terms" className="underline hover:text-ink-700">Terms</Link> and{" "}
+            <Link to="/legal/terms" className="underline hover:text-ink-700">Terms</Link>
+            {" "}and{" "}
             <Link to="/legal/privacy" className="underline hover:text-ink-700">Privacy Policy</Link>.
           </p>
           <p className="mt-4 text-center text-sm text-ink-500">
