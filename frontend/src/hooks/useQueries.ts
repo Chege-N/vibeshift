@@ -51,10 +51,12 @@ export function useCreateJob() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: jobsApi.create,
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["jobs"] });
       queryClient.invalidateQueries({ queryKey: ["stats"] });
       queryClient.invalidateQueries({ queryKey: ["me"] });
+      // Cache the new job immediately so the detail page loads instantly
+      queryClient.setQueryData(["jobs", data.id], data);
       toast.success("Job created! Processing your content…");
     },
     onError: (err: any) => {

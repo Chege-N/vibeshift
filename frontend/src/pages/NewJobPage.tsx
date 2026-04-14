@@ -82,7 +82,7 @@ export default function NewJobPage() {
     return platforms.length > 0;
   };
 
-  const handleSubmit = async () => {
+const handleSubmit = async () => {
     try {
       let job;
       if (contentType === "audio" || contentType === "video") {
@@ -105,8 +105,13 @@ export default function NewJobPage() {
           keywords: keywords ? keywords.split(",").map((k) => k.trim()).filter(Boolean) : undefined,
         });
       }
-      navigate(`/dashboard/jobs/${job.id}`);
-    } catch {}
+      if (job?.id) {
+        navigate(`/dashboard/jobs/${job.id}`);
+      }
+    } catch (err: any) {
+      // Error already shown by the mutation's onError — just log it
+      console.error("Job creation error:", err);
+    }
   };
 
   const charCount = text.length;
