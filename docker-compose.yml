@@ -87,7 +87,7 @@ services:
       - postgres
     networks:
       - repurposeai_net
-    command: celery -A app.core.celery_app worker --loglevel=info --concurrency=4
+    command: celery -A app.core.celery_app worker --loglevel=info --concurrency=4 -Q celery,repurpose,transcription,email
 
   # ─── Celery Beat (Scheduled Tasks) ────────────────────────
   celery_beat:

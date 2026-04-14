@@ -27,6 +27,8 @@ celery_app.conf.update(
         "app.tasks.transcription_tasks.*": {"queue": "transcription"},
         "app.tasks.email_tasks.*": {"queue": "email"},
     },
+    task_default_queue="celery",
+    worker_redirect_stdouts=False,
     beat_schedule={
         "reset-monthly-credits": {
             "task": "app.tasks.credit_tasks.reset_monthly_credits",
