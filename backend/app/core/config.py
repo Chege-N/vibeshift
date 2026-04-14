@@ -32,12 +32,12 @@ class Settings(BaseSettings):
     # Transcription
     ASSEMBLYAI_API_KEY: str = ""
 
-    # Stripe
-    STRIPE_SECRET_KEY: str = ""
-    STRIPE_WEBHOOK_SECRET: str = ""
-    STRIPE_STARTER_PRICE_ID: str = ""
-    STRIPE_PRO_PRICE_ID: str = ""
-    STRIPE_AGENCY_PRICE_ID: str = ""
+    # Paystack
+    PAYSTACK_SECRET_KEY: str = ""
+    PAYSTACK_PUBLIC_KEY: str = ""
+    PAYSTACK_STARTER_PLAN_CODE: str = ""
+    PAYSTACK_PRO_PLAN_CODE: str = ""
+    PAYSTACK_AGENCY_PLAN_CODE: str = ""
 
     # Storage
     STORAGE_TYPE: str = "local"

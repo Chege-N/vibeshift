@@ -5,6 +5,7 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, Query, Body
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, desc, update
+from sqlalchemy.orm import selectinload
 from app.core.database import get_db
 from app.core.security import get_current_active_user
 from app.core.config import settings
@@ -26,7 +27,9 @@ router = APIRouter(prefix="/jobs", tags=["Jobs"])
 
 async def _get_job_or_404(db: AsyncSession, job_id: int, user_id: int) -> RepurposeJob:
     result = await db.execute(
-        select(RepurposeJob).where(
+        select(RepurposeJob)
+        .options(selectinload(RepurposeJob.outputs))
+        .where(
             RepurposeJob.id == job_id,
             RepurposeJob.user_id == user_id,
         )
@@ -221,7 +224,18 @@ async def get_job(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_active_user),
 ):
-    return await _get_job_or_404(db, job_id, current_user.id)
+    result = await db.execute(
+        select(RepurposeJob)
+        .options(selectinload(RepurposeJob.outputs))
+        .where(
+            RepurposeJob.id == job_id,
+            RepurposeJob.user_id == current_user.id,
+        )
+    )
+    job = result.scalar_one_or_none()
+    if not job:
+        raise HTTPException(status_code=404, detail="Job not found")
+    return job
 
 
 # ── Retry a failed job ───────────────────────────────────────────────────────

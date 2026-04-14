@@ -33,7 +33,7 @@ pydantic-settings==2.5.2
 email-validator==2.2.0
 
 # ── Payments ─────────────────────────────────────────────────
-stripe==10.12.0
+# Paystack uses plain HTTP calls via httpx
 
 # ── Transcription ────────────────────────────────────────────
 assemblyai==0.34.0
