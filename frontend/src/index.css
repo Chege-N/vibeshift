@@ -188,3 +188,87 @@
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
+
+/* ── Dark mode ─────────────────────────────────── */
+.dark {
+  --brand: #ff7a1a;
+  --ink: #f0f0eb;
+  --ink-muted: #a0a090;
+  --surface: #141410;
+  --surface-2: #1e1e18;
+  --border: #2a2a22;
+  color-scheme: dark;
+}
+
+.dark body {
+  background: var(--surface);
+  color: var(--ink);
+}
+
+/* Dark card */
+.dark .card {
+  background: #1e1e18;
+  border-color: #2a2a22;
+}
+
+/* Dark input */
+.dark .input,
+.dark .textarea {
+  background: #1e1e18;
+  border-color: #2a2a22;
+  color: #f0f0eb;
+}
+
+.dark .input::placeholder,
+.dark .textarea::placeholder {
+  color: #5a5a4a;
+}
+
+/* Dark surface */
+.dark .bg-surface,
+.dark .bg-\[\#f9f9f6\] {
+  background: #141410;
+}
+
+.dark .bg-white {
+  background: #1e1e18;
+}
+
+/* Dark text */
+.dark .text-ink-950 { color: #f0f0eb; }
+.dark .text-ink-900 { color: #e0e0d8; }
+.dark .text-ink-800 { color: #c8c8bc; }
+.dark .text-ink-700 { color: #b0b0a0; }
+.dark .text-ink-600 { color: #909080; }
+.dark .text-ink-500 { color: #707060; }
+.dark .text-ink-400 { color: #585848; }
+
+/* Dark nav */
+.dark .nav-active {
+  background: linear-gradient(135deg, #2a1a0a 0%, #3a2010 100%);
+  color: #ff9a4a;
+}
+
+/* Dark border */
+.dark .border-ink-100 { border-color: #2a2a22; }
+.dark .border-ink-200 { border-color: #333328; }
+
+/* Dark sidebar */
+.dark aside {
+  background: #1a1a14;
+  border-color: #2a2a22;
+}
+
+/* Dark button ghost */
+.dark .btn-ghost {
+  color: #a0a090;
+}
+.dark .btn-ghost:hover {
+  background: #2a2a22;
+  color: #f0f0eb;
+}
+
+/* Dark output prose */
+.dark .output-prose {
+  color: #d8d8cc;
+}
