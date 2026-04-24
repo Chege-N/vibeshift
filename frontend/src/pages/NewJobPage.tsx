@@ -48,6 +48,8 @@ export default function NewJobPage() {
 
   const isPaid = user?.plan !== "free";
   const maxPlatforms = isPaid ? 10 : 3;
+  // Enforce plan limits
+  const platformLimit = maxPlatforms;
   const isLoading = createJob.isPending || uploadJob.isPending;
 
   const onDrop = useCallback((accepted: File[]) => {
@@ -82,7 +84,7 @@ export default function NewJobPage() {
     return platforms.length > 0;
   };
 
-const handleSubmit = async () => {
+  const handleSubmit = async () => {
     try {
       let job;
       if (contentType === "audio" || contentType === "video") {
@@ -105,12 +107,12 @@ const handleSubmit = async () => {
           keywords: keywords ? keywords.split(",").map((k) => k.trim()).filter(Boolean) : undefined,
         });
       }
+      // Navigate on success — job object returned by mutateAsync
       if (job?.id) {
         navigate(`/dashboard/jobs/${job.id}`);
       }
-    } catch (err: any) {
-      // Error already shown by the mutation's onError — just log it
-      console.error("Job creation error:", err);
+    } catch {
+      // onError in the mutation already shows the toast — don't show another
     }
   };
 
