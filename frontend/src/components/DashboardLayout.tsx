@@ -2,9 +2,10 @@ import { Outlet, NavLink, useNavigate, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   LayoutDashboard, Plus, Settings, CreditCard,
-  LogOut, Sparkles, Zap, TrendingUp, ChevronUp, Shield,
+  LogOut, Sparkles, Zap, TrendingUp, ChevronUp, Shield, Moon, Sun,
 } from "lucide-react";
 import { useAuthStore } from "@/hooks/useAuthStore";
+import { useTheme } from "@/hooks/useTheme";
 import { useMe } from "@/hooks/useQueries";
 import { clsx } from "clsx";
 
@@ -24,6 +25,7 @@ const PLAN_CONFIG: Record<string, { label: string; color: string; bar: string }>
 
 export default function DashboardLayout() {
   const { user, logout } = useAuthStore();
+  const { theme, toggleTheme } = useTheme();
   const { data: me } = useMe();
   const navigate = useNavigate();
   const location = useLocation();
@@ -137,6 +139,13 @@ export default function DashboardLayout() {
               </p>
               <p className="text-[11px] text-ink-400 truncate">{liveUser?.email}</p>
             </div>
+            <button
+              onClick={toggleTheme}
+              className="p-1.5 rounded-lg text-ink-300 hover:text-ink-700 hover:bg-ink-100 transition-colors opacity-0 group-hover:opacity-100"
+              title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+            >
+              {theme === "dark" ? <Sun className="w-3.5 h-3.5" /> : <Moon className="w-3.5 h-3.5" />}
+            </button>
             <button
               onClick={() => { logout(); navigate("/"); }}
               className="p-1.5 rounded-lg text-ink-300 hover:text-red-500 hover:bg-red-50 transition-colors opacity-0 group-hover:opacity-100"
