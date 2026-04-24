@@ -70,9 +70,11 @@ export function useUploadJob() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: jobsApi.upload,
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["jobs"] });
       queryClient.invalidateQueries({ queryKey: ["stats"] });
+      queryClient.invalidateQueries({ queryKey: ["me"] });
+      queryClient.setQueryData(["jobs", data.id], data);
       toast.success("File uploaded! Transcribing & repurposing…");
     },
     onError: (err: any) => {
@@ -87,9 +89,13 @@ export function useCheckout() {
   return useMutation({
     mutationFn: (plan: string) => billingApi.checkout(plan),
     onSuccess: (data) => {
+      // Redirect to Paystack payment page
       window.location.href = data.checkout_url;
     },
-    onError: () => toast.error("Failed to start checkout"),
+    onError: (err: any) => {
+      const msg = err?.response?.data?.detail || "Failed to start checkout";
+      toast.error(msg);
+    },
   });
 }
 
