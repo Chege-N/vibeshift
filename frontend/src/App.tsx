@@ -11,6 +11,7 @@ import PricingPage from "@/pages/PricingPage";
 import SettingsPage from "@/pages/SettingsPage";
 import AdminPage from "@/pages/AdminPage";
 import LegalPage from "@/pages/LegalPage";
+import PaymentSuccessPage from "@/pages/PaymentSuccessPage";
 import DashboardLayout from "@/components/DashboardLayout";
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
@@ -65,6 +66,7 @@ export default function App() {
           <Route path="new" element={<NewJobPage />} />
           <Route path="jobs/:id" element={<JobDetailPage />} />
           <Route path="settings" element={<SettingsPage />} />
+          <Route path="payment-success" element={<PaymentSuccessPage />} />
           <Route path="pricing" element={<PricingPage embedded />} />
         </Route>
       </Routes>
