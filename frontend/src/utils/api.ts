@@ -109,9 +109,15 @@ export const billingApi = {
   checkout: (plan: string) =>
     api.post<{ checkout_url: string }>("/billing/checkout", {
       plan,
-      success_url: `${window.location.origin}/dashboard?upgraded=true`,
-      cancel_url: `${window.location.origin}/pricing`,
+      // Paystack will append ?reference=xxx to this URL on success
+      success_url: `${window.location.origin}/dashboard/payment-success`,
+      cancel_url: `${window.location.origin}/dashboard/pricing`,
     }).then((r) => r.data),
+
+  verify: (reference: string) =>
+    api.get<{ status: string; plan: string; credits: number; message: string }>(
+      `/billing/verify?reference=${reference}`
+    ).then((r) => r.data),
 
   portal: () =>
     api.post<{ portal_url: string }>("/billing/portal", {
