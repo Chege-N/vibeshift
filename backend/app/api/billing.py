@@ -1,9 +1,9 @@
 """
-Billing API — powered by Paystack (works in Kenya, supports M-Pesa + cards).
-Paystack docs: https://paystack.com/docs/api
+Billing API — powered by Paystack (Kenya, M-Pesa + cards).
 """
 import hmac
 import hashlib
+import json
 import httpx
 from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -11,7 +11,7 @@ from app.core.database import get_db
 from app.core.security import get_current_active_user
 from app.core.config import settings
 from app.models.models import User, PlanType
-from app.schemas.schemas import CheckoutRequest, CheckoutResponse, BillingPortalRequest
+from app.schemas.schemas import CheckoutRequest, CheckoutResponse
 from app.services.user_service import UserService
 import logging
 
@@ -20,18 +20,10 @@ router = APIRouter(prefix="/billing", tags=["Billing"])
 
 PAYSTACK_BASE = "https://api.paystack.co"
 
-# Plan amounts in KES (Kenya Shillings) — adjust to your pricing
 PLAN_AMOUNTS = {
-    "starter": 250000,   # KES 2,500/month
-    "pro":     650000,   # KES 6,500/month
-    "agency":  2000000,  # KES 20,000/month
-}
-
-# Paystack Plan codes — create these in Paystack dashboard
-PLAN_CODES = {
-    "starter": settings.PAYSTACK_STARTER_PLAN_CODE,
-    "pro":     settings.PAYSTACK_PRO_PLAN_CODE,
-    "agency":  settings.PAYSTACK_AGENCY_PLAN_CODE,
+    "starter": 250000,   # KES 2,500 in kobo
+    "pro":     650000,   # KES 6,500
+    "agency":  2000000,  # KES 20,000
 }
 
 PLAN_TYPE_MAP = {
@@ -48,7 +40,6 @@ CREDIT_MAP = {
 
 
 async def paystack_request(method: str, endpoint: str, data: dict = None) -> dict:
-    """Make authenticated request to Paystack API."""
     headers = {
         "Authorization": f"Bearer {settings.PAYSTACK_SECRET_KEY}",
         "Content-Type": "application/json",
@@ -62,27 +53,31 @@ async def paystack_request(method: str, endpoint: str, data: dict = None) -> dic
         return resp.json()
 
 
+def get_plan_code(plan: str) -> str:
+    codes = {
+        "starter": settings.PAYSTACK_STARTER_PLAN_CODE,
+        "pro":     settings.PAYSTACK_PRO_PLAN_CODE,
+        "agency":  settings.PAYSTACK_AGENCY_PLAN_CODE,
+    }
+    return codes.get(plan, "")
+
+
 @router.post("/checkout", response_model=CheckoutResponse)
 async def create_checkout(
     payload: CheckoutRequest,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_active_user),
 ):
-    """
-    Initialize a Paystack transaction.
-    Returns a checkout URL — user pays there, Paystack redirects back.
-    """
-    plan_code = PLAN_CODES.get(payload.plan)
+    plan_code = get_plan_code(payload.plan)
     amount = PLAN_AMOUNTS.get(payload.plan)
 
-    if not plan_code or not amount:
+    if not amount:
         raise HTTPException(status_code=400, detail="Invalid plan")
 
     try:
-        result = await paystack_request("POST", "/transaction/initialize", {
+        body: dict = {
             "email": current_user.email,
-            "amount": amount,          # in kobo/cents
-            "plan": plan_code,         # links to recurring plan
+            "amount": amount,
             "currency": "KES",
             "callback_url": payload.success_url,
             "metadata": {
@@ -90,7 +85,12 @@ async def create_checkout(
                 "plan": payload.plan,
                 "full_name": current_user.full_name or "",
             },
-        })
+        }
+        # Only add plan code if configured (recurring subscription)
+        if plan_code:
+            body["plan"] = plan_code
+
+        result = await paystack_request("POST", "/transaction/initialize", body)
     except Exception as e:
         logger.error("Paystack checkout error: %s", e)
         raise HTTPException(status_code=500, detail="Payment provider error. Try again.")
@@ -98,8 +98,7 @@ async def create_checkout(
     if not result.get("status"):
         raise HTTPException(status_code=400, detail=result.get("message", "Checkout failed"))
 
-    checkout_url = result["data"]["authorization_url"]
-    return CheckoutResponse(checkout_url=checkout_url)
+    return CheckoutResponse(checkout_url=result["data"]["authorization_url"])
 
 
 @router.get("/verify")
@@ -109,28 +108,50 @@ async def verify_payment(
     current_user: User = Depends(get_current_active_user),
 ):
     """
-    Called after Paystack redirects back to success_url.
-    Verifies the payment and upgrades the user's plan.
+    Called after Paystack redirects back with ?reference=xxx
+    Verifies payment and upgrades the user plan immediately.
     """
+    if not reference:
+        raise HTTPException(status_code=400, detail="No reference provided")
+
     try:
         result = await paystack_request("GET", f"/transaction/verify/{reference}")
     except Exception as e:
+        logger.error("Paystack verify error: %s", e)
         raise HTTPException(status_code=400, detail="Could not verify payment")
 
-    if not result.get("status") or result["data"]["status"] != "success":
-        raise HTTPException(status_code=400, detail="Payment not successful")
+    if not result.get("status"):
+        raise HTTPException(status_code=400, detail="Verification failed")
 
-    metadata = result["data"].get("metadata", {})
+    txn = result["data"]
+    if txn.get("status") != "success":
+        raise HTTPException(status_code=400, detail=f"Payment status: {txn.get('status')}")
+
+    metadata = txn.get("metadata", {})
+    # metadata can be a string or dict depending on Paystack version
+    if isinstance(metadata, str):
+        try:
+            metadata = json.loads(metadata)
+        except Exception:
+            metadata = {}
+
     plan_str = metadata.get("plan")
-    user_id = metadata.get("user_id")
+    user_id_str = metadata.get("user_id")
 
-    if not plan_str or not user_id:
-        raise HTTPException(status_code=400, detail="Invalid payment metadata")
+    if not plan_str:
+        raise HTTPException(status_code=400, detail="Plan info missing from payment")
 
-    # Upgrade the user
-    plan = PLAN_TYPE_MAP.get(plan_str, PlanType.STARTER)
-    sub_code = result["data"].get("subscription_code", reference)
+    # Verify this payment belongs to the current user
+    if user_id_str and str(current_user.id) != str(user_id_str):
+        raise HTTPException(status_code=403, detail="Payment does not belong to this account")
+
+    plan = PLAN_TYPE_MAP.get(plan_str)
+    if not plan:
+        raise HTTPException(status_code=400, detail=f"Unknown plan: {plan_str}")
+
+    sub_code = txn.get("subscription_code") or reference
     await UserService.update_plan(db, current_user, plan, sub_code)
+    logger.info("User %s upgraded to %s via reference %s", current_user.id, plan_str, reference)
 
     # Send confirmation email
     try:
@@ -144,7 +165,12 @@ async def verify_payment(
     except Exception:
         pass
 
-    return {"status": "success", "plan": plan_str}
+    return {
+        "status": "success",
+        "plan": plan_str,
+        "credits": CREDIT_MAP.get(plan_str, 30),
+        "message": f"Successfully upgraded to {plan_str.title()}!"
+    }
 
 
 @router.post("/webhook", include_in_schema=False)
@@ -152,33 +178,32 @@ async def paystack_webhook(
     request: Request,
     db: AsyncSession = Depends(get_db),
 ):
-    """
-    Paystack sends events here for subscription renewals/cancellations.
-    Secured by HMAC-SHA512 signature verification.
-    """
     body = await request.body()
 
-    # Verify signature
+    # Verify Paystack signature
     sig = request.headers.get("x-paystack-signature", "")
     expected = hmac.new(
-        settings.PAYSTACK_SECRET_KEY.encode(),
+        settings.PAYSTACK_SECRET_KEY.encode("utf-8"),
         body,
         hashlib.sha512,
     ).hexdigest()
 
     if not hmac.compare_digest(sig, expected):
-        raise HTTPException(status_code=400, detail="Invalid webhook signature")
+        raise HTTPException(status_code=400, detail="Invalid signature")
 
-    import json
     event = json.loads(body)
     event_type = event.get("event")
     data = event.get("data", {})
-
-    logger.info("Paystack webhook: %s", event_type)
+    logger.info("Paystack webhook received: %s", event_type)
 
     if event_type == "charge.success":
-        # One-time or first subscription payment succeeded
         metadata = data.get("metadata", {})
+        if isinstance(metadata, str):
+            try:
+                metadata = json.loads(metadata)
+            except Exception:
+                metadata = {}
+
         plan_str = metadata.get("plan")
         user_id = metadata.get("user_id")
 
@@ -188,9 +213,9 @@ async def paystack_webhook(
                 plan = PLAN_TYPE_MAP.get(plan_str, PlanType.STARTER)
                 sub_code = data.get("subscription_code", "")
                 await UserService.update_plan(db, user, plan, sub_code)
+                logger.info("Webhook: upgraded user %s to %s", user_id, plan_str)
 
     elif event_type == "subscription.disable":
-        # Subscription cancelled — downgrade to free
         sub_code = data.get("subscription_code", "")
         if sub_code:
             from sqlalchemy import select
@@ -206,11 +231,10 @@ async def paystack_webhook(
 
 @router.get("/plans")
 async def get_plans():
-    """Return plan info for the frontend pricing page."""
     return {
         "plans": [
-            {"id": "starter", "name": "Starter", "amount_kes": 2500,  "amount_usd": 19, "credits": 30 },
-            {"id": "pro",     "name": "Pro",     "amount_kes": 6500,  "amount_usd": 49, "credits": 100},
-            {"id": "agency",  "name": "Agency",  "amount_kes": 20000, "amount_usd": 149,"credits": 999},
+            {"id": "starter", "name": "Starter", "amount_kes": 2500,  "credits": 30 },
+            {"id": "pro",     "name": "Pro",     "amount_kes": 6500,  "credits": 100},
+            {"id": "agency",  "name": "Agency",  "amount_kes": 20000, "credits": 999},
         ]
     }
